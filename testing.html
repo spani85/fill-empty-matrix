@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>EMPTY BOXES</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      padding: 100px;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 60%;
+      margin: 0 auto;
+    }
+    .block {
+      width: 20%;
+      height: 100px;
+      background-color:#fff;
+      outline: 1px dotted #bbb;
+    }
+    .block.fill {
+      background-color: #ccc;
+    }
+    .toolbar {
+      text-align: center;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <button id="fill-empty">Fill Empty</button>
+    </div>
+    <div class="row">
+      
+    </div>
+  </div>
+  <script>
+    var colors = [
+      '#F44336',
+      '#E91E63',
+      '#9C27B0',
+      '#673AB7',
+      '#3F51B5',
+      '#2196F3',
+      '#03A9F4',
+      '#00BCD4',
+      '#009688',
+      '#4CAF50',
+      '#8BC34A',
+      '#CDDC39',
+      '#FFEB3B',
+      '#FFC107',
+      '#FF9800',
+      '#FF5722',
+      '#795548',
+      '#9E9E9E',
+      '#607D8B'
+    ];
+
+    // Matrice di 0 o 1
+    var M = [];
+    // numero delle colonne
+    var cols = 5;
+    // numero delle righe
+    var rows = 5;
+
+    var button = document.querySelector('#fill-empty');
+    var row = document.querySelector('.row');
+
+    var empty_or_fill = function() {
+      return Math.floor( ( Math.random() * 10 ) % 2 );
+    }
+
+    var create_M = function() {
+      for(var i=0; i<rows; i++) {
+        var temp = [];
+        for(var j=0; j<cols; j++) {
+          temp.push( empty_or_fill() );
+        }
+        M.push(temp);
+      }
+    }
+
+    var display_M = function() {
+      for(var i=0; i<rows; i++) {
+        for(var j=0; j<cols; j++) {
+          var block = document.createElement('div');
+          block.className = 'block';
+          if( 1 === M[i][j]) {
+            block.className += ' fill';
+          }
+          block.innerHTML = '[' + i + ',' + j + ']';
+          row.appendChild(block);
+        }
+      }
+    }
+
+    var init_test = function() {
+      create_M();
+      display_M();
+    }
+
+    init_test();
+
+    /**
+     * Aggiungi blocco grande w*h in posizione [I][J]
+     * @param {int} w larghezza
+     * @param {int} h altezza
+     * @param {int} I indice di riga di partenza
+     * @param {int} J indice di colonna di partenza
+     */
+    var addBlock = function(w, h, I, J) {
+      var blocks = document.querySelectorAll('.block');
+      var color = Math.floor( Math.random() * 18 ) + 1;
+      console.log(color, colors[color]);
+      for(var i=I;i<(I+h);i++) {
+        for(var j=J;j<(J+w);j++) {
+          M[i][j] = 1;
+          var spot = i*rows + j;
+          blocks[spot].style.backgroundColor = colors[color];
+        }
+      }
+    }
+
+    var fillEmptyCells = function() {
+      var i,j;
+      var guard;
+      var w, h;
+      var internal_i, internal_j;
+
+      for(i=0;i<rows;i++) {
+        for(j=0;j<cols;j++) {
+          if(0 === M[i][j]) {
+            guard = 0;
+            w = h = 1;
+            internal_i = i;
+            internal_j = j;
+
+            while(internal_j<cols && 0 === M[internal_i][internal_j]) {
+              guard = internal_j;
+              internal_j++;
+            }
+            w = internal_j-j;
+            internal_i++;
+            internal_j=j;
+
+
+            while(internal_i<rows) {
+              while(internal_j<guard) {
+                if(0 === M[internal_i][internal_j]) {
+                  internal_j++;
+                } else {
+                  break;
+                }
+              }
+              if(internal_j-1 == guard) {
+                internal_i++;
+                internal_j=j;
+              } else {
+                break;
+              }
+            }
+
+            h = internal_i-i;
+            console.log(w,h,i,j);
+
+            addBlock(w, h, i, j);
+          }
+        }
+      }
+    }
+
+    button.addEventListener('click', function(e) {
+      fillEmptyCells();
+    });
+  </script>
+</body>
+</html>
